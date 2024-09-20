@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo docker run --d \
+sudo docker run -d \
 	--name mnist-mariadb \
 	--env MARIADB_USER=mnist \
        	--env MARIADB_PASSWORD=1234 \
