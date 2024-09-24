@@ -1,8 +1,14 @@
 import pymysql.cursors
+import os
 
 def get_conn():
-    conn = pymysql.connect(host = '172.17.0.1', port = 53306,
-                            user = 'mnist', password = '1234',
+    db_host = os.getenv("DB_IP", "localhost")
+    # localhost = '127.0.0.1'
+    db_port = os.getenv("DB_PORT", "53306")
+    conn = pymysql.connect( host = db_host, 
+                            port = int(db_port),
+                            user = 'mnist', 
+                            password = '1234',
                             database = 'mnistdb',
                             cursorclass = pymysql.cursors.DictCursor)
     return conn

@@ -3,14 +3,18 @@ from fastapi import FastAPI, File, UploadFile
 import os
 import pymysql.cursors
 import json
-from mnist.db import get_conn
 
 app = FastAPI()
 
 
-@app.post("/files/")
+@app.get("/files/")
 async def file_list():
-    conn = get_conn()
+    conn = pymysql.connect(host=os.getenv('DB', '127.0.0.1'),
+                            user='mnist',
+                            password='1234',
+                            database='mnistdb',
+                            port=int(os.getenv('DB_PORT', 53306)),
+                            cursorclass=pymysql.cursors.DictCursor)
     with conn:
         with conn.cursor() as cursor:
             sql = "SELECT * FROM image_processing WHERE prediction_time IS NULL ORDER BY num"
@@ -28,7 +32,8 @@ async def create_upload_file(file: UploadFile):
     file_ext = file.content_type.split('/')[-1]  #'png'만 받기
 
     # 디렉토리가 없으면 오류, 코드에서 확인 및 만들기 추가
-    upload_dir = "/home/dohyun/codes/mnist/img"
+    upload_dir = os.getenv('UPLOAD_DIR', "/home/dohyun/codes/mnist/img")
+    #"/home/dohyun/codes/mnist/img"
     if not os.path.exists(upload_dir):
         os.makedirs(upload_dir)
     
@@ -44,7 +49,7 @@ async def create_upload_file(file: UploadFile):
     # 컬럼 정보 : num (초기 인서트, 자동증가)
     # 처음 컬럼 정보 : 파일이름, 파일경로, 요청시간 (초기 인서트), 요청사용자(n00)
     # 컬럼 정보 : 예측모델, 예측결과, 예측시간 (추후 업데이트)
-    sql = "INSERT INTO image_processing(file_name, file_path, request_time, request_user) VALUES(%s, %s, %s, %s)"
+    sql = "INSERT INTO image_processing(`file_name`, `file_path`, `request_time`, `request_user`) VALUES(%s, %s, %s, %s)"
 
     from datetime import datetime, timedelta
     from pytz import timezone
@@ -53,15 +58,17 @@ async def create_upload_file(file: UploadFile):
     seoul_tz = pytz.timezone('Asia/Seoul')
     jiguem = datetime.now(seoul_tz).strftime('%Y-%m-%d %H:%M:%S')
 
-    import jigeum.seoul
+    #import jigeum.seoul
     from mnist.db import dml
-
-    insert_row = dml(sql, file_name, file_full_path, jigeum.seoul.now(), 'n99')
+    
+    #jiguem = jigeum.seoul.now()
+    insert_row = dml(sql, file_name, file_full_path, jigeum, 'n09')
 
     return {
             "filename": file.filename,
             "content_type":file.content_type,
             "file_full_path": file_full_path,
+            "time": jiguem,
             "insert_row_count": insert_row
             }
 
@@ -82,8 +89,11 @@ def one():
     from mnist.db import select
 
     sql = """
-            SELECT * FROM image_processing 
-            WHERE prediction_time IS NULL ORDER BY num LIMIT 1
+            SELECT * 
+            FROM image_processing 
+            WHERE prediction_time IS NULL 
+            ORDER BY num 
+            LIMIT 1
             """
     result = select(query=sql, size=1)
     # 결과값 리턴
