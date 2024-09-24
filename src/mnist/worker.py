@@ -4,6 +4,13 @@ import random
 import os
 import requests
 
+import numpy as np
+from PIL import Image
+from keras.models import load_model
+
+#모델 로드
+model = load_model('mnist240924.keras')
+
 def get_job_img_task():
    sql = """
    SELECT 
@@ -20,6 +27,19 @@ def get_job_img_task():
    else:
        return None
 
+# 사용자 이미지 불러오기 및 전처리
+def preprocess_image(image_path):
+    img = Image.open(image_path).convert('L')
+    img = img.resize((28,28)) #크기 조정
+
+    # 흑백반전
+    img = 255 - np.array(img)
+    img = np.array(img)
+    img = img.reshape(1,28,28,1) #모델 입력 형태 맞게 변형
+    img = img/255.0 #정규화
+
+    return img
+
 def prediction(file_path, num):
     sql = """UPDATE image_processing
     SET prediction_result=%s,
@@ -27,7 +47,9 @@ def prediction(file_path, num):
         prediction_time=%s
     WHERE num=%s
     """
-    presult = random.randint(0, 9)
+    img = preprocess_image(file_path)
+    prediction = model.predict(img)
+    presult = np.argmax(prediction)
     dml(sql, presult, jigu.now(), num)
 
     return presult
