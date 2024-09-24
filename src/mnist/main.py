@@ -62,7 +62,7 @@ async def create_upload_file(file: UploadFile):
     from mnist.db import dml
     
     #jiguem = jigeum.seoul.now()
-    insert_row = dml(sql, file_name, file_full_path, jigeum, 'n09')
+    insert_row = dml(sql, file_name, file_full_path, jiguem, 'n09')
 
     return {
             "filename": file.filename,

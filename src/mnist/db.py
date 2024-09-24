@@ -2,7 +2,7 @@ import pymysql.cursors
 import os
 
 def get_conn():
-    db_host = os.getenv("DB_IP", "localhost")
+    db_host = os.getenv("DB_IP", "127.0.0.1")
     # localhost = '127.0.0.1'
     db_port = os.getenv("DB_PORT", "53306")
     conn = pymysql.connect( host = db_host, 
