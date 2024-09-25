@@ -9,6 +9,7 @@ __pycache__/
 
 # note/train_img
 note/**/*.png
+note/
 
 # Distribution / packaging
 .Python
