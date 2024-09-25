@@ -2,7 +2,7 @@ import pymysql.cursors
 import os
 
 def get_conn():
-    db_host = os.getenv("DB_IP", "127.0.0.1")
+    db_host = os.getenv("DB_IP", "172.17.0.1")
     # localhost = '127.0.0.1'
     db_port = os.getenv("DB_PORT", "53306")
     conn = pymysql.connect( host = db_host, 
@@ -13,6 +13,7 @@ def get_conn():
                             cursorclass = pymysql.cursors.DictCursor)
     return conn
 
+# db connection이후 data select
 def select(query: str, size = -1):
     conn = get_conn()
     with conn:
@@ -22,6 +23,7 @@ def select(query: str, size = -1):
 
     return result
 
+# db connection이후 
 def dml(sql, *values):
     conn = get_conn()
 
